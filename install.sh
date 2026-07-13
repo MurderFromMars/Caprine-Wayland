@@ -2,17 +2,27 @@
 #
 # install.sh — build Caprine-Wayland from source and install it.
 #
+# Works two ways:
+#   1. Run from inside a checked-out copy of the repo (./install.sh).
+#   2. Piped straight from the internet with no local checkout at all —
+#      it will clone the repo itself first:
+#        curl -fsSL <raw-url>/install.sh | bash
+#
 # Builds an AppImage via electron-builder and installs it (plus a .desktop
 # entry and icon) either for the current user (default, no root needed) or
 # system-wide with --system.
 #
 # Usage:
-#   ./install.sh                # build + install for current user
-#   ./install.sh --system       # build + install system-wide (needs sudo)
-#   ./install.sh --deb          # build a .deb instead of an AppImage
-#   ./install.sh --uninstall    # remove a previous install
-#   ./install.sh --skip-deps    # don't try to install missing system packages
-#   ./install.sh -h | --help
+#   install.sh                # build + install for current user
+#   install.sh --system       # build + install system-wide (needs sudo)
+#   install.sh --deb          # build a .deb instead of an AppImage
+#   install.sh --uninstall    # remove a previous install
+#   install.sh --skip-deps    # don't try to install missing system packages
+#   install.sh -h | --help
+#
+# Env vars:
+#   CAPRINE_WAYLAND_REPO   git URL to clone from when no local checkout is
+#                          found (default: github.com/MurderFromMars/Caprine-Wayland)
 
 set -euo pipefail
 
@@ -22,7 +32,8 @@ set -euo pipefail
 
 APP_NAME="caprine-wayland"
 APP_DISPLAY_NAME="Caprine Wayland"
-REPO_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+REPO_URL="${CAPRINE_WAYLAND_REPO:-https://github.com/MurderFromMars/Caprine-Wayland.git}"
+REPO_DIR=""
 TARGET="AppImage"
 MODE="user"
 SKIP_DEPS=0
@@ -50,7 +61,19 @@ fail()  { printf '%s[x]%s %s\n' "${C_RED}${C_BOLD}" "${C_RESET}" "$1" >&2; exit 
 # ---------------------------------------------------------------------------
 
 print_help() {
-	sed -n '2,20p' "${BASH_SOURCE[0]}" | sed 's/^# \{0,1\}//'
+	cat <<'EOF'
+Usage:
+  install.sh                # build + install for current user
+  install.sh --system       # build + install system-wide (needs sudo)
+  install.sh --deb          # build a .deb instead of an AppImage
+  install.sh --uninstall    # remove a previous install
+  install.sh --skip-deps    # don't try to install missing system packages
+  install.sh -h | --help
+
+Env vars:
+  CAPRINE_WAYLAND_REPO   git URL to clone from when no local checkout is
+                         found (default: github.com/MurderFromMars/Caprine-Wayland)
+EOF
 }
 
 while [[ $# -gt 0 ]]; do
@@ -99,6 +122,55 @@ if [[ "$DO_UNINSTALL" -eq 1 ]]; then
 	ok "Uninstalled."
 	exit 0
 fi
+
+# ---------------------------------------------------------------------------
+# Locate (or fetch) the source tree
+# ---------------------------------------------------------------------------
+#
+# Three ways this script can end up running, in order of preference:
+#   1. Executed as a real file sitting inside an already-cloned repo
+#      (BASH_SOURCE points at a real path on disk).
+#   2. Run with cwd already inside a checkout (e.g. copy-pasted into a
+#      terminal from within the repo directory).
+#   3. Streamed straight into bash via `curl | bash` — no source file, no
+#      local checkout. In this case we clone the repo ourselves.
+
+looks_like_repo() {
+	# $1: directory to check
+	[[ -f "$1/package.json" ]] && grep -q '"name": "caprine"' "$1/package.json" 2>/dev/null
+}
+
+detect_repo_dir() {
+	# Case 1: real script file on disk.
+	if [[ -n "${BASH_SOURCE[0]:-}" && -f "${BASH_SOURCE[0]}" ]]; then
+		local script_dir
+		script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+		if looks_like_repo "$script_dir"; then
+			REPO_DIR="$script_dir"
+			return
+		fi
+	fi
+
+	# Case 2: cwd is already a checkout.
+	if looks_like_repo "$(pwd)"; then
+		REPO_DIR="$(pwd)"
+		return
+	fi
+
+	# Case 3: no checkout found — clone one. Needs git, so make sure it
+	# exists before anything else does.
+	command -v git >/dev/null 2>&1 || install_system_deps
+
+	local clone_target="${PWD}/Caprine-Wayland"
+	if looks_like_repo "$clone_target"; then
+		info "Found existing checkout at ${clone_target}, using it."
+	else
+		info "No local checkout found — cloning ${REPO_URL}…"
+		git clone --depth 1 "$REPO_URL" "$clone_target" \
+			|| fail "Clone failed. If ${REPO_URL} isn't right, set CAPRINE_WAYLAND_REPO and re-run, or 'git clone' it yourself and run install.sh from inside it."
+	fi
+	REPO_DIR="$clone_target"
+}
 
 # ---------------------------------------------------------------------------
 # Dependency detection / install
@@ -194,7 +266,7 @@ build() {
 install_artifact() {
 	cd "$REPO_DIR"
 
-	mkdir -p "$INSTALL_DIR" "$BIN_DIR" "$DESKTOP_DIR" "$ICON_DIR"
+	mkdir -p "$INSTALL_DIR" "$BIN_DIR" "$DESKTOP_DIR" "$ICON_DIR" 2>/dev/null || true
 	if [[ "$MODE" == "system" ]]; then
 		sudo mkdir -p "$INSTALL_DIR" "$BIN_DIR" "$DESKTOP_DIR" "$ICON_DIR"
 	fi
@@ -254,7 +326,9 @@ EOF
 # Main
 # ---------------------------------------------------------------------------
 
+detect_repo_dir
 info "Installing ${APP_DISPLAY_NAME} (${MODE} mode, target: ${TARGET})"
+info "Source: ${REPO_DIR}"
 check_deps
 build
 install_artifact
