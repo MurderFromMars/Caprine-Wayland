@@ -45,6 +45,69 @@
 
 \*macOS only
 
+## About this fork
+
+**Caprine-Wayland** is a fork of [Caprine](https://github.com/sindresorhus/caprine) with native Wayland support built in: Ozone/Wayland and the PipeWire screen capturer are enabled automatically when you're running a Wayland session, so screen sharing and window decorations work correctly instead of silently falling back to XWayland. No flags required — it just detects `XDG_SESSION_TYPE`/`WAYLAND_DISPLAY` at launch. See [`install.sh`](install.sh) for the build/install script and the two override env vars (`CAPRINE_FORCE_WAYLAND`, `CAPRINE_DISABLE_WAYLAND`).
+
+### Install from source
+
+One-liner, works from any shell (bash, zsh, fish, dash — it's piped straight into `bash`):
+
+```sh
+curl -fsSL https://raw.githubusercontent.com/MurderFromMars/Caprine-Wayland/main/install.sh | bash
+```
+
+> Replace the URL above with wherever you actually host this fork — it's a placeholder pointing at a `MurderFromMars/Caprine-Wayland` repo.<div align="center">
+	<br>
+	<br>
+	<a href="https://github.com/sindresorhus/caprine">
+		<img src="media/AppIcon-readme.png" width="200" height="200">
+	</a>
+	<h1>Caprine</h1>
+	<p>
+		<b>Elegant Facebook Messenger desktop app</b>
+	</p>
+	<br>
+	<br>
+	<p>
+		Caprine is an unofficial and privacy-focused Facebook Messenger app with many useful features.
+	</p>
+	<b>
+		Caprine is feature complete. However, we welcome contributions for improvements and bug fixes.
+	</b>
+	<br>
+		<a href="https://github.com/sindresorhus/caprine">
+		Website
+		</a>
+	<br>
+	<a href="https://github.com/sindresorhus/caprine/releases/latest">
+		<img src="media/screenshot.png" width="846">
+	</a>
+</div>
+
+## Highlights
+
+- [Dark theme](#dark-mode)
+- [Vibrant theme](#vibrancy-macos-only)\*
+
+
+This clones nothing on its own; it expects to be run against a checked-out copy of the repo. If you'd rather clone first and inspect before running anything piped from the internet (recommended):
+
+```sh
+git clone https://github.com/MurderFromMars/Caprine-Wayland.git && cd Caprine-Wayland && bash install.sh
+```
+
+The script installs build dependencies (Node.js, npm, git, a C/C++ toolchain) via your distro's package manager, compiles the app, packages an AppImage with `electron-builder`, and installs it — a launcher, `.desktop` entry, and icon — for the current user by default.
+
+Useful flags:
+
+| Flag | Effect |
+| --- | --- |
+| `--system` | Install system-wide to `/opt` + `/usr/share/...` (needs sudo) instead of `~/.local/...` |
+| `--deb` | Build and install a `.deb` via `dpkg` instead of an AppImage |
+| `--skip-deps` | Don't try to auto-install system packages |
+| `--uninstall` | Remove a previous install |
+
 ## Install
 
 *macOS 10.12+ (Intel and Apple Silicon), Linux (x64 and arm64), and Windows 10+ (64-bit) are supported.*
