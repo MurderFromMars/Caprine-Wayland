@@ -57,8 +57,6 @@ One-liner, works from any shell (bash, zsh, fish, dash — it's piped straight i
 curl -fsSL https://raw.githubusercontent.com/MurderFromMars/Caprine-Wayland/main/install.sh | bash
 ```
 
-> Replace the URL above with wherever you actually host this fork — it's a placeholder pointing at a `MurderFromMars/Caprine-Wayland` repo. If that repo path is wrong, set `CAPRINE_WAYLAND_REPO=<git-url>` before running, e.g. `CAPRINE_WAYLAND_REPO=git@github.com:you/your-fork.git curl -fsSL .../install.sh | bash`.
-
 If you'd rather clone first and inspect before running anything piped from the internet (recommended):
 
 ```sh
