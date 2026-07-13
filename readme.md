@@ -51,47 +51,15 @@
 
 ### Install from source
 
-One-liner, works from any shell (bash, zsh, fish, dash — it's piped straight into `bash`):
+One-liner, works from any shell (bash, zsh, fish, dash — it's piped straight into `bash`). It clones this repo itself if you don't already have a local checkout, then builds and installs:
 
 ```sh
 curl -fsSL https://raw.githubusercontent.com/MurderFromMars/Caprine-Wayland/main/install.sh | bash
 ```
 
-> Replace the URL above with wherever you actually host this fork — it's a placeholder pointing at a `MurderFromMars/Caprine-Wayland` repo.<div align="center">
-	<br>
-	<br>
-	<a href="https://github.com/sindresorhus/caprine">
-		<img src="media/AppIcon-readme.png" width="200" height="200">
-	</a>
-	<h1>Caprine</h1>
-	<p>
-		<b>Elegant Facebook Messenger desktop app</b>
-	</p>
-	<br>
-	<br>
-	<p>
-		Caprine is an unofficial and privacy-focused Facebook Messenger app with many useful features.
-	</p>
-	<b>
-		Caprine is feature complete. However, we welcome contributions for improvements and bug fixes.
-	</b>
-	<br>
-		<a href="https://github.com/sindresorhus/caprine">
-		Website
-		</a>
-	<br>
-	<a href="https://github.com/sindresorhus/caprine/releases/latest">
-		<img src="media/screenshot.png" width="846">
-	</a>
-</div>
+> Replace the URL above with wherever you actually host this fork — it's a placeholder pointing at a `MurderFromMars/Caprine-Wayland` repo. If that repo path is wrong, set `CAPRINE_WAYLAND_REPO=<git-url>` before running, e.g. `CAPRINE_WAYLAND_REPO=git@github.com:you/your-fork.git curl -fsSL .../install.sh | bash`.
 
-## Highlights
-
-- [Dark theme](#dark-mode)
-- [Vibrant theme](#vibrancy-macos-only)\*
-
-
-This clones nothing on its own; it expects to be run against a checked-out copy of the repo. If you'd rather clone first and inspect before running anything piped from the internet (recommended):
+If you'd rather clone first and inspect before running anything piped from the internet (recommended):
 
 ```sh
 git clone https://github.com/MurderFromMars/Caprine-Wayland.git && cd Caprine-Wayland && bash install.sh
