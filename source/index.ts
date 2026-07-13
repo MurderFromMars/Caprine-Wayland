@@ -38,6 +38,34 @@ import {caprineIconPath} from './constants';
 
 ipc.setMaxListeners(100);
 
+/**
+ * Native Wayland support.
+ *
+ * Enables Ozone/Wayland plus the PipeWire-backed screen capturer whenever
+ * Caprine is launched inside a native Wayland session, so screen sharing,
+ * window decorations, and IME behave correctly instead of silently falling
+ * back to XWayland.
+ *
+ * Override with env vars if needed:
+ *   CAPRINE_FORCE_WAYLAND=1   force-enable even if session type isn't detected
+ *   CAPRINE_DISABLE_WAYLAND=1 always fall back to X11/XWayland
+ */
+if (process.platform === 'linux' && process.env['CAPRINE_DISABLE_WAYLAND'] !== '1') {
+	const isWaylandSession =
+		process.env['CAPRINE_FORCE_WAYLAND'] === '1' ||
+		process.env['XDG_SESSION_TYPE'] === 'wayland' ||
+		Boolean(process.env['WAYLAND_DISPLAY']);
+
+	if (isWaylandSession) {
+		app.commandLine.appendSwitch('ozone-platform', 'wayland');
+		app.commandLine.appendSwitch(
+			'enable-features',
+			'WaylandWindowDecorations,WebRTCPipeWireCapturer',
+		);
+		app.commandLine.appendSwitch('enable-wayland-ime');
+	}
+}
+
 electronDebug({
 	isEnabled: true, // TODO: This is only enabled to allow `Command+R` because messenger.com sometimes gets stuck after computer waking up
 	showDevTools: false,
